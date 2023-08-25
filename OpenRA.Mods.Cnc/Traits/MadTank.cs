@@ -44,6 +44,11 @@ namespace OpenRA.Mods.Cnc.Traits
 		[WeaponReference]
 		public readonly string DetonationWeapon = "MADTankDetonate";
 
+		[NotificationReference("Speech")]
+		public readonly string DeploySpeechNotification = null;
+
+		public readonly string DeployTextNotification = null;
+
 		[ActorReference]
 		public readonly string DriverActor = "e1";
 
@@ -194,6 +199,12 @@ namespace OpenRA.Mods.Cnc.Traits
 						return true;
 
 					self.GrantCondition(mad.info.DeployedCondition);
+
+					if (mad.info.DeploySpeechNotification != null)
+						Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Speech", mad.info.DeploySpeechNotification, self.Owner.Faction.InternalName);
+
+					if (mad.info.DeployTextNotification != null)
+						TextNotificationsManager.AddTransientLine(mad.info.DeployTextNotification, self.Owner);
 
 					self.World.AddFrameEndTask(w => EjectDriver());
 					if (mad.info.ThumpSequence != null)

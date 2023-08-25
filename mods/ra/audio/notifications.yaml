@@ -49,6 +49,7 @@ Speech:
 		Leave: bct1
 		Lose: misnlst1
 		LowPower: lopower1
+		MadTankDeployed: tank01
 		MercenaryFreed: mercf1
 		MercenaryRescued: mercr1
 		MissionAccomplished: misnwon1

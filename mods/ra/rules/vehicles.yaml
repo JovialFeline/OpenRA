@@ -864,6 +864,8 @@ QTNK:
 		Range: 4c0
 	MadTank:
 		DeployedCondition: deployed
+		DeploySpeechNotification: MadTankDeployed
+		DeployTextNotification: MAD Tank deployed.
 	WithRangeCircle:
 		Color: FFFF0080
 		Range: 7c0
