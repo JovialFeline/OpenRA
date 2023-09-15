@@ -166,6 +166,8 @@ namespace OpenRA.Mods.Common.Traits
 			if (dockedClientActor != null && !dockedClientActor.IsDead && dockedClientActor.IsInWorld)
 			{
 				dockedClientActor.ChangeOwner(newOwner);
+				foreach (var t in dockedClientActor.TraitsImplementing<INotifyCapture>())
+					t.OnCapture(self, captor, oldOwner, newOwner, captureTypes);
 
 				// On capture OnOwnerChanged event is called first, so we need to re-reserve.
 				dockedClient.ReserveHost(self, this);
