@@ -80,7 +80,8 @@ namespace OpenRA.Mods.Common.Scripting
 			Self.World.Add(new FlashTarget(Self, color, 0.5f, count, interval, delay));
 		}
 
-		[Desc("The effective owner of the actor.")]
+		[Desc("The effective (displayed) owner of the actor. " +
+			"Some traits like Disguise can make this distinct from the true owner.")]
 		public Player EffectiveOwner
 		{
 			get

@@ -82,7 +82,8 @@ namespace OpenRA.Mods.Common.Scripting
 			GetScriptTriggers(actor).RegisterCallback(Trigger.OnIdle, func, Context);
 		}
 
-		[Desc("Call a function when the actor is damaged. The callback " +
+		[Desc("Call a function when the actor is damaged. " +
+			"Repairs or other negative damage can activate this trigger. The callback " +
 			"function will be called as func(Actor self, Actor attacker, int damage).")]
 		public void OnDamaged(Actor actor, LuaFunction func)
 		{
@@ -130,7 +131,8 @@ namespace OpenRA.Mods.Common.Scripting
 				GetScriptTriggers(a).OnKilledInternal += OnMemberKilled;
 		}
 
-		[Desc("Call a function when one of the actors in a group is killed. The callback " +
+		[Desc("Call a function when one of the actors in a group is killed. " +
+			"This trigger removes itself once activated. The callback " +
 			"function will be called as func(Actor killed).")]
 		public void OnAnyKilled(Actor[] actors, LuaFunction func)
 		{
@@ -164,12 +166,12 @@ namespace OpenRA.Mods.Common.Scripting
 
 		[Desc("Call a function when this actor produces another actor. " +
 			"The callback function will be called as func(Actor producer, Actor produced).")]
-		public void OnProduction(Actor actors, LuaFunction func)
+		public void OnProduction(Actor actor, LuaFunction func)
 		{
-			if (actors == null)
-				throw new NullReferenceException(nameof(actors));
+			if (actor == null)
+				throw new NullReferenceException(nameof(actor));
 
-			GetScriptTriggers(actors).RegisterCallback(Trigger.OnProduction, func, Context);
+			GetScriptTriggers(actor).RegisterCallback(Trigger.OnProduction, func, Context);
 		}
 
 		[Desc("Call a function when any actor produces another actor. The callback " +
@@ -304,15 +306,16 @@ namespace OpenRA.Mods.Common.Scripting
 
 		[Desc("Call a function when this actor is captured. The callback function " +
 			"will be called as func(Actor self, Actor captor, Player oldOwner, Player newOwner).")]
-		public void OnCapture(Actor actors, LuaFunction func)
+		public void OnCapture(Actor actor, LuaFunction func)
 		{
-			if (actors == null)
-				throw new NullReferenceException(nameof(actors));
+			if (actor == null)
+				throw new NullReferenceException(nameof(actor));
 
-			GetScriptTriggers(actors).RegisterCallback(Trigger.OnCapture, func, Context);
+			GetScriptTriggers(actor).RegisterCallback(Trigger.OnCapture, func, Context);
 		}
 
 		[Desc("Call a function when this actor is killed or captured. " +
+			"This trigger removes itself once activated. " +
 			"The callback function will be called as func().")]
 		public void OnKilledOrCaptured(Actor actor, LuaFunction func)
 		{
@@ -345,6 +348,7 @@ namespace OpenRA.Mods.Common.Scripting
 		}
 
 		[Desc("Call a function when all of the actors in a group have been killed or captured. " +
+			"This trigger removes itself once activated. " +
 			"The callback function will be called as func().")]
 		public void OnAllKilledOrCaptured(Actor[] actors, LuaFunction func)
 		{
