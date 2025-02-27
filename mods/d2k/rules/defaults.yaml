@@ -143,7 +143,7 @@
 		RequiresCondition: stance-attackanything || assault-move
 	GrantConditionOnBotOwner@BOTOWNER:
 		Condition: bot-owned
-		Bots: omnius, vidious, gladius
+		Bots: campaign, omnius, vidious, gladius
 	GrantCondition@IGNORECREEPS:
 		Condition: ignore-creeps
 		RequiresCondition: bot-owned && (attack-move || assault-move)
@@ -183,7 +183,7 @@
 		RequiresCondition: stance-attackanything || assault-move
 	GrantConditionOnBotOwner@BOTOWNER:
 		Condition: bot-owned
-		Bots: omnius, vidious, gladius
+		Bots: campaign, omnius, vidious, gladius
 	GrantCondition@IGNORECREEPS:
 		Condition: ignore-creeps
 		RequiresCondition: bot-owned && (attack-move || assault-move)
