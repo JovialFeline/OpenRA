@@ -71,7 +71,7 @@ ChurchFootprint = function()
 end
 
 ChurchSequence = function()
-	Media.PlaySoundNotification(Greece, CivVoice)
+	Media.PlaySpeechNotification(Greece, CivVoice)
 	Hero = Actor.Create("c1", true, { Owner = GoodGuy, Location = ChurchSpawn.Location })
 	Hero.Attack(TargetBarrel)
 
@@ -174,7 +174,7 @@ WarfactoryInfiltrated = function()
 	Trigger.OnEnteredProximityTrigger(TrukWaypoint4.CenterPosition, WDist.FromCells(1), function(actor, id)
 		if actor.Type == "dog" then
 			Trigger.RemoveProximityTrigger(id)
-			Media.PlaySoundNotification(Greece, DogBark)
+			Media.PlaySpeechNotification(Greece, DogBark)
 			Utils.Do(CheckpointRifles, function(guard)
 				guard.Move(TrukInspect.Location)
 			end)
@@ -193,7 +193,7 @@ WarfactoryInfiltrated = function()
 			Spy.DisguiseAsType("e1", USSR)
 			Spy.Move(TruckWaypoint5.Location)
 			Spy.Infiltrate(Prison)
-			Media.PlaySoundNotification(Greece, SpyVoice)
+			Media.PlaySpeechNotification(Greece, SpyVoice)
 
 			FollowTruk = false
 
@@ -221,7 +221,7 @@ MissInfiltrated = function()
 	for i = 0, 5, 1 do
 		local sound = Utils.Random(TanyaVoices)
 		Trigger.AfterDelay(DateTime.Seconds(i), function()
-			Media.PlaySoundNotification(Greece, sound)
+			Media.PlaySpeechNotification(Greece, sound)
 		end)
 	end
 	Prison.Attack(Prison)

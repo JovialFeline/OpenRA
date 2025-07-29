@@ -211,7 +211,7 @@ WorldLoaded = function()
 		if unit.Owner == USSR then
 			if not TanyaSquadTanya.IsDead then
 				local TanyaSquadCamera = Actor.Create("camera", true, { Owner = USSR, Location = waypoint85.Location })
-				Media.PlaySoundNotification(USSR, "rokroll")
+				Media.PlaySpeechNotification(USSR, "rokroll")
 				Utils.Do(TanyaSquad, function(actor)
 					if not actor.IsDead then
 						Trigger.OnIdle(actor, actor.Hunt)

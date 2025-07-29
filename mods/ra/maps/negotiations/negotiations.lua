@@ -391,7 +391,7 @@ PrepareForestEncounter = function()
 
 		Trigger.AfterDelay(DateTime.Seconds(1), function()
 			if not actor.IsDead then
-				Media.PlaySoundNotification(Greece, "DogWhine")
+				Media.PlaySpeechNotification(Greece, "DogWhine")
 			end
 		end)
 	end)
@@ -972,7 +972,7 @@ GuideToVillage = function(guide, patrolKilled)
 	end
 
 	guide.Stop()
-	Media.PlaySoundNotification(Greece, "GuideOkay")
+	Media.PlaySpeechNotification(Greece, "GuideOkay")
 	Media.DisplayMessage(UserInterface.GetFluentMessage("guide-safe-to-move"), guide.TooltipName)
 	if not patrolKilled then
 		guide.Wait(DateTime.Seconds(1))

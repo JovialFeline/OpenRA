@@ -48,7 +48,7 @@ IntroSequence = function()
 		TheSpy.Move(SpyWaypoint2.Location)
 	end
 	Trigger.AfterDelay(DateTime.Seconds(1), function()
-		Media.PlaySoundNotification(USSR, "sking")
+		Media.PlaySpeechNotification(USSR, "sking")
 	end)
 	Trigger.AfterDelay(DateTime.Seconds(2), function()
 		Media.PlaySpeechNotification(USSR, "ExplosiveChargePlaced")

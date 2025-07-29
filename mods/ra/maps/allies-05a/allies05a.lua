@@ -169,7 +169,7 @@ MissInfiltrated = function()
 	for i = 0, 5, 1 do
 		local sound = Utils.Random(TanyaVoices)
 		Trigger.AfterDelay(DateTime.Seconds(i), function()
-			Media.PlaySoundNotification(Greece, sound)
+			Media.PlaySpeechNotification(Greece, sound)
 		end)
 	end
 	Prison.Attack(Prison)
@@ -293,7 +293,7 @@ InitTriggers = function()
 			Spy.DisguiseAsType("e1", USSR)
 			Spy.Move(SpyWaypoint.Location)
 			Spy.Infiltrate(Prison)
-			Media.PlaySoundNotification(Greece, SpyVoice)
+			Media.PlaySpeechNotification(Greece, SpyVoice)
 
 			FollowTruk = false
 
