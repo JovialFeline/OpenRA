@@ -89,19 +89,21 @@ LabGuardsKilled = function()
 end
 
 SendExtractionHelicopter = function()
-	Heli = Reinforcements.ReinforceWithTransport(Greece, ExtractionHelicopterType, nil, ExtractionPath)[1]
-	if not Einstein.IsDead then
-		Trigger.OnRemovedFromWorld(Einstein, EvacuateHelicopter)
-	end
-	Trigger.OnKilled(Heli, RescueFailed)
-	Trigger.OnRemovedFromWorld(Heli, HelicopterGone)
+	local heli = Reinforcements.ReinforceWithTransport(Greece, ExtractionHelicopterType, nil, ExtractionPath)[1]
+	Trigger.OnPassengerEntered(heli, EvacuateHelicopter)
+	Trigger.OnKilled(heli, RescueFailed)
 end
 
-EvacuateHelicopter = function()
-	if Heli.HasPassengers then
-		Heli.Move(ExtractionExitPoint.Location)
-		Heli.Destroy()
-	end
+EvacuateHelicopter = function(heli)
+	Trigger.OnIdle(heli, function()
+		if heli.Location ~= ExtractionExitPoint.Location then
+			heli.Move(ExtractionExitPoint.Location)
+			return
+		end
+
+		HelicopterGone()
+		heli.Destroy()
+	end)
 end
 
 SendCruisers = function()
@@ -156,19 +158,17 @@ CreateEinstein = function()
 end
 
 HelicopterGone = function()
-	if not Heli.IsDead then
-		Media.PlaySpeechNotification(Greece, "TargetRescued")
-		Trigger.AfterDelay(DateTime.Seconds(1), function()
-			Greece.MarkCompletedObjective(ExtractObjective)
-			Greece.MarkCompletedObjective(EinsteinSurviveObjective)
-			if not Greece.IsObjectiveFailed(TanyaSurviveObjective) then
-				Greece.MarkCompletedObjective(TanyaSurviveObjective)
-			end
-			if not CollateralDamage then
-				Greece.MarkCompletedObjective(CivilProtectionObjective)
-			end
-		end)
-	end
+	Media.PlaySpeechNotification(Greece, "TargetRescued")
+	Trigger.AfterDelay(DateTime.Seconds(1), function()
+		Greece.MarkCompletedObjective(ExtractObjective)
+		Greece.MarkCompletedObjective(EinsteinSurviveObjective)
+		if not Greece.IsObjectiveFailed(TanyaSurviveObjective) then
+			Greece.MarkCompletedObjective(TanyaSurviveObjective)
+		end
+		if not CollateralDamage then
+			Greece.MarkCompletedObjective(CivilProtectionObjective)
+		end
+	end)
 end
 
 SetUnitStances = function()

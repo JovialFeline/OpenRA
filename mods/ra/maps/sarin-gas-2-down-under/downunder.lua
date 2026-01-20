@@ -415,7 +415,9 @@ ScientistRescued = function()
 		end
 	end)
 
-	Trigger.OnRemovedFromWorld(ScientistMan, DemoTruckExit)
+	if not DemoTruck.IsDead then
+		Trigger.OnPassengerEntered(DemoTruck, DemoTruckExit)
+	end
 end
 
 DemoTruckExit = function()
@@ -428,13 +430,13 @@ DemoTruckExit = function()
 		DemoTruck.Move(waypoint.Location)
 	end)
 
-	local trukEscaped
-	Trigger.OnEnteredFootprint({ DemoDrive4.Location }, function(actor, id)
-		if actor.Type == "dtrk" and not trukEscaped then
-			Trigger.RemoveFootprintTrigger(id)
-			trukEscaped = true
-			actor.Destroy()
+	Trigger.OnIdle(DemoTruck, function()
+		if DemoTruck.Location ~= DemoDrive4.Location then
+			DemoTruck.Move(DemoDrive4.Location)
+			return
 		end
+
+		DemoTruck.Destroy()
 	end)
 end
 

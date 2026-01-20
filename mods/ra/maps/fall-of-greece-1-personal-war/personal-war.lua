@@ -467,15 +467,20 @@ SovBaseAttack = function()
 	BaseDamaged = true
 end
 
-ExtractUnits = function(extractionUnit, pos, after)
+ExtractUnits = function(extractionUnit, goal, after)
 	if extractionUnit.IsDead or not extractionUnit.HasPassengers then
 		return
 	end
 
-	extractionUnit.Move(pos)
-	extractionUnit.Destroy()
+	Trigger.OnIdle(extractionUnit, function()
+		if extractionUnit.Location ~= goal then
+			extractionUnit.Move(goal)
+			return
+		end
 
-	Trigger.OnRemovedFromWorld(extractionUnit, after)
+		extractionUnit.Destroy()
+		after()
+	end)
 end
 
 SendExtractionHelicopter = function()
@@ -483,7 +488,12 @@ SendExtractionHelicopter = function()
 	local exitPos = CPos.New(ExtractionPath[1].X, ExtractionPath[2].Y)
 
 	Trigger.OnKilled(ExtractionHeli, function() USSR.MarkCompletedObjective(SovietObj) end)
-	Trigger.OnAllRemovedFromWorld(VIPs, function()
+
+	Trigger.OnPassengerEntered(ExtractionHeli, function()
+		if ExtractionHeli.PassengerCount < 2 then
+			return
+		end
+
 		ExtractUnits(ExtractionHeli, exitPos, function()
 			Allies.MarkCompletedObjective(ProtectVIPs)
 			Allies.MarkCompletedObjective(ExtractStavros)

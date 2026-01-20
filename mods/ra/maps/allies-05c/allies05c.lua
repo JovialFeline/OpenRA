@@ -134,15 +134,20 @@ SendReinforcements = function()
 	ActivateAI()
 end
 
-ExtractUnits = function(extractionUnit, pos, after)
+ExtractUnits = function(extractionUnit, goal, after)
 	if extractionUnit.IsDead or not extractionUnit.HasPassengers then
 		return
 	end
 
-	extractionUnit.Move(pos)
-	extractionUnit.Destroy()
+	Trigger.OnIdle(extractionUnit, function()
+		if extractionUnit.Location ~= goal then
+			extractionUnit.Move(goal)
+			return
+		end
 
-	Trigger.OnRemovedFromWorld(extractionUnit, after)
+		extractionUnit.Destroy()
+		after()
+	end)
 end
 
 WarfactoryInfiltrated = function()
@@ -220,6 +225,32 @@ FreeTanya = function()
 	if not SpecialCameras and PrisonCamera and PrisonCamera.IsInWorld then
 		PrisonCamera.Destroy()
 	end
+end
+
+SpawnExtractionHelicopter = function()
+	local flare = Actor.Create("flare", true, { Owner = Greece, Location = ExtractionPath[2] + CVec.New(0, -1) })
+	Trigger.AfterDelay(DateTime.Seconds(7), flare.Destroy)
+	Media.PlaySpeechNotification(Greece, "SignalFlare")
+
+	local helicopter = Reinforcements.ReinforceWithTransport(Greece, ExtractionHeliType, nil, ExtractionPath)[1]
+	local exitPos = CPos.New(ExtractionPath[1].X, ExtractionPath[2].Y)
+	Trigger.OnKilled(helicopter, function() USSR.MarkCompletedObjective(USSRObj) end)
+
+	Trigger.OnPassengerEntered(helicopter, function(_, passenger)
+		if passenger.Type ~= TanyaType then
+			return
+		end
+
+		ExtractUnits(helicopter, exitPos, function()
+			Media.PlaySpeechNotification(Greece, "TanyaRescued")
+			Greece.MarkCompletedObjective(MainObj)
+			Trigger.AfterDelay(DateTime.Seconds(2), SendReinforcements)
+
+			if PrisonCamera and PrisonCamera.IsInWorld then
+				PrisonCamera.Destroy()
+			end
+		end)
+	end)
 end
 
 InitTriggers = function()
@@ -307,29 +338,7 @@ InitTriggers = function()
 
 	Trigger.OnAllKilled(SamSites, function()
 		Greece.MarkCompletedObjective(KillSams)
-
-		local flare = Actor.Create("flare", true, { Owner = Greece, Location = ExtractionPath[2] + CVec.New(0, -1) })
-		Trigger.AfterDelay(DateTime.Seconds(7), flare.Destroy)
-		Media.PlaySpeechNotification(Greece, "SignalFlare")
-
-		ExtractionHeli = Reinforcements.ReinforceWithTransport(Greece, ExtractionHeliType, nil, ExtractionPath)[1]
-		local exitPos = CPos.New(ExtractionPath[1].X, ExtractionPath[2].Y)
-
-		Trigger.OnKilled(ExtractionHeli, function() USSR.MarkCompletedObjective(USSRObj) end)
-		Trigger.OnRemovedFromWorld(Tanya, function()
-			ExtractUnits(ExtractionHeli, exitPos, function()
-
-				Media.PlaySpeechNotification(Greece, "TanyaRescued")
-				Greece.MarkCompletedObjective(MainObj)
-				Trigger.AfterDelay(DateTime.Seconds(2), function()
-					SendReinforcements()
-				end)
-
-				if PrisonCamera and PrisonCamera.IsInWorld then
-					PrisonCamera.Destroy()
-				end
-			end)
-		end)
+		SpawnExtractionHelicopter()
 	end)
 end
 

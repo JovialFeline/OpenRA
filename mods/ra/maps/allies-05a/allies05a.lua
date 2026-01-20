@@ -120,15 +120,46 @@ SendReinforcements = function()
 	ActivateAI()
 end
 
-ExtractUnits = function(extractionUnit, pos, after)
+ExtractUnits = function(extractionUnit, goal, after)
 	if extractionUnit.IsDead or not extractionUnit.HasPassengers then
 		return
 	end
 
-	extractionUnit.Move(pos)
-	extractionUnit.Destroy()
+	Trigger.OnIdle(extractionUnit, function()
+		if extractionUnit.Location ~= goal then
+			extractionUnit.Move(goal)
+			return
+		end
 
-	Trigger.OnRemovedFromWorld(extractionUnit, after)
+		extractionUnit.Destroy()
+		after()
+	end)
+end
+
+SpawnExtractionHelicopter = function()
+	local flare = Actor.Create("flare", true, { Owner = Greece, Location = ExtractionPath[2] + CVec.New(0, -1) })
+	Trigger.AfterDelay(DateTime.Seconds(7), flare.Destroy)
+	Media.PlaySpeechNotification(Greece, "SignalFlare")
+
+	local helicopter = Reinforcements.ReinforceWithTransport(Greece, ExtractionHelicopterType, nil, ExtractionPath)[1]
+	local exitPos = CPos.New(ExtractionPath[1].X, ExtractionPath[2].Y)
+	Trigger.OnKilled(helicopter, function() USSR.MarkCompletedObjective(USSRobjective) end)
+
+	Trigger.OnPassengerEntered(helicopter, function(_, passenger)
+		if passenger.Type ~= TanyaType then
+			return
+		end
+
+		ExtractUnits(helicopter, exitPos, function()
+			Media.PlaySpeechNotification(Greece, "TanyaRescued")
+			Greece.MarkCompletedObjective(RescueTanyaObjective)
+			Trigger.AfterDelay(DateTime.Seconds(2), SendReinforcements)
+
+			if PrisonCamera and PrisonCamera.IsInWorld then
+				PrisonCamera.Destroy()
+			end
+		end)
+	end)
 end
 
 SendWaterExtraction = function()
@@ -137,12 +168,25 @@ SendWaterExtraction = function()
 	Media.PlaySpeechNotification(Greece, "SignalFlareNorth")
 	Camera.Position = flare.CenterPosition
 
-	WaterExtractionTran = Reinforcements.ReinforceWithTransport(Greece, ExtractionTransport, nil, SpyEntryPath)[1]
+	local extractionBoat = Reinforcements.ReinforceWithTransport(Greece, ExtractionTransport, nil, SpyEntryPath)[1]
+	local strikeTeam = Greece.GetGroundAttackers()
+	local passengerQuota = #strikeTeam
 	ExtractObjective = AddPrimaryObjective(Greece, "extract-transport")
 
-	Trigger.OnKilled(WaterExtractionTran, function() USSR.MarkCompletedObjective(USSRobjective) end)
-	Trigger.OnAllRemovedFromWorld(Greece.GetGroundAttackers(), function()
-		ExtractUnits(WaterExtractionTran, SpyEntryPath[1], function()
+	Trigger.OnKilled(extractionBoat, function() USSR.MarkCompletedObjective(USSRobjective) end)
+
+	Utils.Do(strikeTeam, function(unit)
+		Trigger.OnKilled(unit, function()
+			passengerQuota = passengerQuota - 1
+		end)
+	end)
+
+	Trigger.OnIdle(extractionBoat, function()
+		if extractionBoat.PassengerCount < passengerQuota or extractionBoat.Location ~= SpyEntryPath[2] then
+			return
+		end
+
+		ExtractUnits(extractionBoat, SpyEntryPath[1], function()
 			Greece.MarkCompletedObjective(ExtractObjective)
 			Greece.MarkCompletedObjective(TanyaSurviveObjective)
 		end)
@@ -353,35 +397,14 @@ InitTriggers = function()
 	Trigger.OnAllKilled(SamSites, function()
 		Greece.MarkCompletedObjective(KillSams)
 
-		local flare = Actor.Create("flare", true, { Owner = Greece, Location = ExtractionPath[2] + CVec.New(0, -1) })
-		Trigger.AfterDelay(DateTime.Seconds(7), flare.Destroy)
-		Media.PlaySpeechNotification(Greece, "SignalFlare")
-
 		if Difficulty == "tough" then
 			Reinforcements.ReinforceWithTransport(Greece, InsertionHeliType, HeliReinforcements, ExtractionPath, { ExtractionPath[1] })
+
 			if not Harvester.IsDead then
 				Harvester.FindResources()
 			end
-
 		else
-			ExtractionHeli = Reinforcements.ReinforceWithTransport(Greece, ExtractionHeliType, nil, ExtractionPath)[1]
-			local exitPos = CPos.New(ExtractionPath[1].X, ExtractionPath[2].Y)
-
-			Trigger.OnKilled(ExtractionHeli, function() USSR.MarkCompletedObjective(USSRobjective) end)
-			Trigger.OnRemovedFromWorld(Tanya, function()
-				ExtractUnits(ExtractionHeli, exitPos, function()
-
-					Media.PlaySpeechNotification(Greece, "TanyaRescued")
-					Greece.MarkCompletedObjective(RescueTanyaObjective)
-					Trigger.AfterDelay(DateTime.Seconds(2), function()
-						SendReinforcements()
-					end)
-
-					if PrisonCamera and PrisonCamera.IsInWorld then
-						PrisonCamera.Destroy()
-					end
-				end)
-			end)
+			SpawnExtractionHelicopter()
 		end
 	end)
 end

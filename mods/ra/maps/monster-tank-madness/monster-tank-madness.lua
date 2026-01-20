@@ -31,20 +31,24 @@ HospitalAreaTrigger = { CPos.New(43, 41), CPos.New(44, 41), CPos.New(45, 41), CP
 
 EvacuateCivilians = function()
 	local evacuees = Reinforcements.Reinforce(Neutral, CivilianEvacuees, { HospitalCivilianSpawnPoint.Location }, 0)
+	local rescueCount = 0
 
 	Trigger.OnAnyKilled(evacuees, function()
 		Greece.MarkFailedObjective(RescueCivilians)
 	end)
-	Trigger.OnAllRemovedFromWorld(evacuees, function()
-		Greece.MarkCompletedObjective(RescueCivilians)
-	end)
 
 	Utils.Do(evacuees, function(civ)
 		Trigger.OnIdle(civ, function()
-			if civ.Location == AlliedBaseEntryPoint.Location then
-				civ.Destroy()
-			else
+			if civ.Location ~= AlliedBaseEntryPoint.Location then
 				civ.Move(AlliedBaseEntryPoint.Location)
+				return
+			end
+
+			civ.Destroy()
+			rescueCount = rescueCount + 1
+
+			if rescueCount == #evacuees then
+				Greece.MarkCompletedObjective(RescueCivilians)
 			end
 		end)
 	end)
@@ -211,6 +215,7 @@ CreateDemitri = function()
 	Greece.MarkCompletedObjective(FindDemitri)
 
 	local flarepos = CPos.New(DemitriLZ.Location.X, DemitriLZ.Location.Y - 1)
+	local extractionExit = ExtractionWaypoint + CVec.New(0, -1)
 	local demitriLZFlare = Actor.Create("flare", true, { Owner = Greece, Location = flarepos })
 	Trigger.AfterDelay(DateTime.Seconds(3), function() Media.PlaySpeechNotification(Greece, "SignalFlareNorth") end)
 
@@ -220,19 +225,21 @@ CreateDemitri = function()
 		Greece.MarkFailedObjective(EvacuateDemitri)
 	end)
 
-	Trigger.OnRemovedFromWorld(demitriChinook, function()
-		if not demitriChinook.IsDead then
-			Media.PlaySpeechNotification(Greece, "TargetRescued")
-			Trigger.AfterDelay(DateTime.Seconds(1), function() Greece.MarkCompletedObjective(EvacuateDemitri) end)
-			Trigger.AfterDelay(DateTime.Seconds(3), SpawnAndMoveAlliedBaseUnits)
+	Trigger.OnIdle(demitriChinook, function()
+		if not demitriChinook.HasPassengers then
+			return
 		end
-	end)
-	Trigger.OnRemovedFromWorld(demitri, function()
-		if not demitriChinook.IsDead and demitriChinook.HasPassengers then
-			demitriChinook.Move(ExtractionWaypoint + CVec.New(0, -1))
-			demitriChinook.Destroy()
-			demitriLZFlare.Destroy()
+
+		if demitriChinook.Location ~= extractionExit then
+			demitriChinook.Move(extractionExit)
+			return
 		end
+
+		demitriChinook.Destroy()
+		demitriLZFlare.Destroy()
+		Media.PlaySpeechNotification(Greece, "TargetRescued")
+		Trigger.AfterDelay(DateTime.Seconds(1), function() Greece.MarkCompletedObjective(EvacuateDemitri) end)
+		Trigger.AfterDelay(DateTime.Seconds(3), SpawnAndMoveAlliedBaseUnits)
 	end)
 end
 

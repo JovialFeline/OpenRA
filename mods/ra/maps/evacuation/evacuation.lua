@@ -230,6 +230,41 @@ SetupSoviets = function()
 	end)
 end
 
+SpawnExtractionHelicopter = function()
+	Actor.Create("flare", true, { Owner = Allies1, Location = ExtractionLZ.Location + CVec.New(1, -1) })
+	Beacon.New(Allies1, ExtractionLZ.CenterPosition)
+	Media.PlaySpeechNotification(Allies1, "SignalFlareNorth")
+
+	local helicopter = Reinforcements.ReinforceWithTransport(Allies1, "tran", nil, { ExtractionLZEntryPoint.Location, ExtractionLZ.Location })[1]
+	local einsteinLoaded = false
+
+	Trigger.OnPassengerEntered(helicopter, function(_, passenger)
+		einsteinLoaded = einsteinLoaded or passenger == Einstein
+	end)
+
+	Trigger.OnKilled(helicopter, function()
+		Allies1.MarkFailedObjective(ExtractEinsteinObjective)
+	end)
+
+	Trigger.OnIdle(helicopter, function()
+		if not einsteinLoaded then
+			return
+		end
+
+		if helicopter.Location ~= ExtractionLZEntryPoint.Location then
+			helicopter.Move(ExtractionLZEntryPoint.Location)
+			return
+		end
+
+		helicopter.Destroy()
+		Allies2.MarkCompletedObjective(LimitLossesObjective)
+		Allies2.MarkCompletedObjective(HoldPositionObjective)
+		Allies1.MarkCompletedObjective(TanyaMustSurviveObjective)
+		Allies1.MarkCompletedObjective(EinsteinSurvivalObjective)
+		Allies1.MarkCompletedObjective(ExtractEinsteinObjective)
+	end)
+end
+
 SetupTriggers = function()
 	Trigger.OnKilled(Tanya, function()
 		Allies1.MarkFailedObjective(TanyaMustSurviveObjective)
@@ -238,27 +273,7 @@ SetupTriggers = function()
 	Trigger.OnAllKilledOrCaptured(Sams, function()
 		Allies1.MarkCompletedObjective(DestroySamSitesObjective)
 		ExtractEinsteinObjective = AddPrimaryObjective(Allies1, "wait-for-helicopter-extract-einstein")
-		Actor.Create("flare", true, { Owner = Allies1, Location = ExtractionLZ.Location + CVec.New(1, -1) })
-		Beacon.New(Allies1, ExtractionLZ.CenterPosition)
-		Media.PlaySpeechNotification(Allies1, "SignalFlareNorth")
-
-		ExtractionHeli = Reinforcements.ReinforceWithTransport(Allies1, "tran", nil, { ExtractionLZEntryPoint.Location, ExtractionLZ.Location })[1]
-		Trigger.OnKilled(ExtractionHeli, function()
-			Allies1.MarkFailedObjective(ExtractEinsteinObjective)
-		end)
-		Trigger.OnPassengerEntered(ExtractionHeli, function(heli, passenger)
-			if passenger == Einstein then
-				heli.Move(ExtractionLZEntryPoint.Location)
-				heli.Destroy()
-				Trigger.OnRemovedFromWorld(heli, function()
-					Allies2.MarkCompletedObjective(LimitLossesObjective)
-					Allies2.MarkCompletedObjective(HoldPositionObjective)
-					Allies1.MarkCompletedObjective(TanyaMustSurviveObjective)
-					Allies1.MarkCompletedObjective(EinsteinSurvivalObjective)
-					Allies1.MarkCompletedObjective(ExtractEinsteinObjective)
-				end)
-			end
-		end)
+		SpawnExtractionHelicopter()
 	end)
 
 	Trigger.OnEnteredProximityTrigger(TownPoint.CenterPosition, WDist.FromCells(15), function(actor, trigger)
