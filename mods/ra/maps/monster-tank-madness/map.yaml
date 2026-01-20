@@ -30,6 +30,7 @@ Players:
 		Color: ABB7E4
 		LockSpawn: True
 		LockTeam: True
+		Allies: England
 		Enemies: BadGuy, USSR, Ukraine, Turkey, FriendlyMadTanks
 	PlayerReference@BadGuy:
 		Name: BadGuy
@@ -45,6 +46,12 @@ Players:
 		Allies: BadGuy, Ukraine
 		Enemies: Greece, Turkey
 		Bot: campaign
+	PlayerReference@England:
+		Name: England
+		NonCombatant: True
+		Faction: allies
+		Color: A1EF8C
+		Allies: Greece
 	PlayerReference@Neutral:
 		Name: Neutral
 		OwnsWorld: True
@@ -1374,7 +1381,7 @@ Actors:
 		Location: 45,25
 		Owner: Outpost
 		Health: 31
-		Facing: 384
+		Facing: 640
 	Actor430: gun
 		Location: 29,30
 		Owner: Outpost
@@ -1384,7 +1391,7 @@ Actors:
 		Location: 38,29
 		Owner: Outpost
 		Health: 39
-		Facing: 384
+		Facing: 640
 	Actor432: tent
 		Location: 33,22
 		Owner: Outpost
@@ -1565,13 +1572,13 @@ Actors:
 	Actor495: barl
 		Location: 28,61
 		Owner: USSR
-	Actor496: barl
+	FlameTurretBarrel1: barl
 		Location: 29,62
 		Owner: USSR
 	Actor497: barl
 		Location: 39,64
 		Owner: USSR
-	Actor498: barl
+	FlameTurretBarrel2: barl
 		Location: 35,66
 		Owner: USSR
 	Actor499: barl
@@ -1816,26 +1823,27 @@ Actors:
 	Actor588: v2rl
 		Location: 91,75
 		Owner: USSR
-		Facing: 128
+		Facing: 896
 	Actor589: v2rl
 		Location: 91,89
 		Owner: USSR
-		Facing: 128
+		Facing: 896
 	Actor590: badtruk
 		Location: 89,34
 		Owner: BadGuy
-		Facing: 128
+		Facing: 896
 	Actor591: badtruk
 		Location: 90,35
 		Owner: BadGuy
-		Facing: 384
+		Facing: 640
 	Actor592: badtruk
 		Location: 89,36
 		Owner: BadGuy
-	Actor593: v2rl
+	BeachLauncher: v2rl.percentage
 		Location: 32,48
 		Owner: BadGuy
-		Facing: 640
+		Facing: 384
+		Stance: HoldFire
 	Actor594: 3tnk
 		Location: 85,86
 		Owner: USSR
@@ -1854,24 +1862,24 @@ Actors:
 	Actor599: bad3tnk
 		Location: 76,27
 		Owner: BadGuy
-		Facing: 896
+		Facing: 128
 	Actor600: dtrk
 		Location: 86,83
 		Owner: USSR
 	Actor601: e1
 		Location: 24,71
 		Owner: BadGuy
-		Facing: 384
+		Facing: 640
 		SubCell: 2
 	Actor602: e1
 		Location: 25,71
 		Owner: BadGuy
-		Facing: 384
+		Facing: 640
 		SubCell: 2
 	Actor603: e1
 		Location: 28,72
 		Owner: BadGuy
-		Facing: 768
+		Facing: 256
 		SubCell: 1
 	Actor604: e1
 		Location: 29,72
@@ -1880,13 +1888,13 @@ Actors:
 	Actor605: e2
 		Location: 29,70
 		Owner: BadGuy
-		Facing: 640
-		SubCell: 4
+		Facing: 384
+		SubCell: 5
 	Actor606: e2
 		Location: 24,69
 		Owner: BadGuy
-		Facing: 640
-		SubCell: 4
+		Facing: 384
+		SubCell: 5
 	Actor607: e1
 		Location: 81,88
 		Owner: USSR
@@ -1906,7 +1914,7 @@ Actors:
 	Actor611: e1
 		Location: 81,88
 		Owner: USSR
-		SubCell: 4
+		SubCell: 5
 	Actor612: e3
 		Location: 83,89
 		Owner: USSR
@@ -1926,7 +1934,7 @@ Actors:
 	Actor616: e4
 		Location: 85,89
 		Owner: USSR
-		SubCell: 3
+		SubCell: 4
 	Actor617: e4
 		Location: 85,90
 		Owner: USSR
@@ -1934,7 +1942,7 @@ Actors:
 	Actor618: e1
 		Location: 61,23
 		Owner: BadGuy
-		Facing: 640
+		Facing: 384
 		SubCell: 0
 	Actor619: e1
 		Location: 74,26
@@ -1943,31 +1951,31 @@ Actors:
 	Actor620: e1
 		Location: 75,25
 		Owner: BadGuy
-		SubCell: 4
+		SubCell: 5
 	Actor621: e2
 		Location: 78,19
 		Owner: BadGuy
-		Facing: 768
+		Facing: 256
 		SubCell: 0
 	Actor622: e2
 		Location: 79,19
 		Owner: BadGuy
-		Facing: 768
-		SubCell: 3
+		Facing: 256
+		SubCell: 4
 	Actor623: dog
 		Location: 61,24
 		Owner: BadGuy
-		Facing: 640
+		Facing: 384
 		SubCell: 2
 	Actor624: dog
 		Location: 60,24
 		Owner: BadGuy
-		Facing: 640
+		Facing: 384
 		SubCell: 2
 	Actor625: dog
 		Location: 74,25
 		Owner: BadGuy
-		Facing: 896
+		Facing: 128
 		SubCell: 2
 	Actor507: v11.exploding
 		Location: 97,56
@@ -2015,8 +2023,9 @@ Actors:
 		Health: 35
 		FreeActor: False
 	AlliedBaseHarv: harv
-		Location: 30,26
+		Location: 28,27
 		Owner: Neutral
+		Facing: 256
 	Hospital: hosp
 		Location: 43,43
 		Owner: Neutral
@@ -2044,10 +2053,13 @@ Actors:
 	DemitriChurchSpawnPoint: waypoint
 		Location: 29,100
 		Owner: Neutral
-	StartMovePoint: waypoint
+	StartRally1: waypoint
 		Location: 25,81
 		Owner: Neutral
-	StartBridgeEndPoint: waypoint
+	StartRally2: waypoint
+		Location: 27,83
+		Owner: Neutral
+	StartRally3: waypoint
 		Location: 25,85
 		Owner: Neutral
 	AlliedBaseTopLeft: waypoint
@@ -2091,6 +2103,27 @@ Actors:
 		Owner: Neutral
 	SuperTankHuntWaypoint4: waypoint
 		Location: 65,78
+		Owner: Neutral
+	SuperTankDomeFlarePoint: waypoint
+		Location: 92,34
+		Owner: Neutral
+	SupplyTruckWaypoint1: waypoint
+		Location: 82,61
+		Owner: Neutral
+	SupplyTruckWaypoint2: waypoint
+		Location: 82,70
+		Owner: Neutral
+	SupplyTruckWaypoint3: waypoint
+		Location: 84,86
+		Owner: Neutral
+	SovietBadgerEntry: waypoint
+		Location: 105,85
+		Owner: Neutral
+	SovietBadgerGoal: waypoint
+		Location: 24,39
+		Owner: Neutral
+	SovietOrePoint: waypoint
+		Location: 54,81
 		Owner: Neutral
 
 Rules: ra|rules/campaign-rules.yaml, ra|rules/campaign-tooltips.yaml, ra|rules/campaign-palettes.yaml, rules.yaml

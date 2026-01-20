@@ -6,16 +6,17 @@
    the License, or (at your option) any later version. For more
    information, see COPYING.
 ]]
+
 AlliedUnits =
 {
-	{ delay = 0, types = { "1tnk", "1tnk", "2tnk", "2tnk" } },
-	{ delay = DateTime.Seconds(3), types = { "e1", "e1", "e1", "e3", "e3" } },
-	{ delay = DateTime.Seconds(7), types = { "e6", "e6", "thf" } }
+	{ types = { "1tnk", "1tnk", "2tnk", "2tnk" }, point = StartRally1, delay = 0 },
+	{ types = { "e1", "e1", "e1", "e3", "e3" }, point = StartRally2, delay = DateTime.Seconds(3) },
+	{ types = { "e6", "e6", "thf" }, point = StartRally3, delay = DateTime.Seconds(7) },
 }
 ReinforceBaseUnits = { "1tnk", "1tnk", "2tnk", "arty", "arty" }
 CivilianEvacuees = { "c2", "c3", "c5", "c6", "c8" }
 USSROutpostFlameTurrets = { FlameTurret1, FlameTurret2 }
-ExplosiveBarrels = { ExplosiveBarrel1, ExplosiveBarrel2 }
+ExplosiveBarrels = { FlameTurretBarrel1, FlameTurretBarrel2 }
 SuperTanks = { stnk1, stnk2, stnk3 }
 SuperTankMoveWaypoints = { HospitalSuperTankPoint, AlliedBaseBottomRight, DemitriTriggerAreaCenter, DemitriLZ }
 SuperTankMove = 1
@@ -28,9 +29,12 @@ ExtractionLZ = DemitriLZ.Location
 BeachTrigger = { CPos.New(19, 44), CPos.New(20, 44), CPos.New(21, 44), CPos.New(22, 44), CPos.New(22, 45), CPos.New(23, 45), CPos.New(22, 44), CPos.New(24, 45), CPos.New(24, 46), CPos.New(24, 47), CPos.New(25, 47), CPos.New(25, 48) }
 DemitriAreaTrigger = { CPos.New(32, 98), CPos.New(32, 99), CPos.New(33, 99), CPos.New(33, 100), CPos.New(33, 101), CPos.New(33, 102), CPos.New(32, 102), CPos.New(32, 103) }
 HospitalAreaTrigger = { CPos.New(43, 41), CPos.New(44, 41), CPos.New(45, 41), CPos.New(46, 41), CPos.New(46, 42), CPos.New(46, 43), CPos.New(46, 44), CPos.New(46, 45), CPos.New(46, 46), CPos.New(45, 46), CPos.New(44, 46), CPos.New(43, 46) }
+SuperTankDomeDiscovered = false
 
 EvacuateCivilians = function()
-	local evacuees = Reinforcements.Reinforce(Neutral, CivilianEvacuees, { HospitalCivilianSpawnPoint.Location }, 0)
+	local evacuees = Reinforcements.Reinforce(England, CivilianEvacuees, { HospitalCivilianSpawnPoint.Location }, 0, function(a)
+		a.Scatter()
+	end)
 
 	Trigger.OnAnyKilled(evacuees, function()
 		Greece.MarkFailedObjective(RescueCivilians)
@@ -46,6 +50,60 @@ EvacuateCivilians = function()
 			else
 				civ.Move(AlliedBaseEntryPoint.Location)
 			end
+		end)
+	end)
+end
+
+SendSovietParadrop = function()
+	local proxy = Actor.Create("powerproxy.paratroopers", false, { Owner = USSR })
+	local angle = (SovietBadgerGoal.CenterPosition - SovietBadgerEntry.CenterPosition).Facing
+	local plane = proxy.TargetParatroopers(SovietBadgerGoal.CenterPosition, angle)[1]
+	proxy.Destroy()
+
+	Trigger.OnPassengerExited(plane, function(_, passenger)
+		IdleHunt(passenger)
+	end)
+end
+
+OrderPenAttack = function(pen)
+	if BeachLauncher.IsDead then
+		return
+	end
+
+	local penWarhead = BeachLauncher.GrantCondition("using-percentage-warhead")
+
+	Trigger.OnIdle(BeachLauncher, function()
+		if pen.IsInWorld then
+			BeachLauncher.Attack(pen)
+			return
+		end
+
+		Trigger.ClearAll(BeachLauncher)
+		BeachLauncher.Stance = "AttackAnything"
+		BeachLauncher.RevokeCondition(penWarhead)
+	end)
+end
+
+OrderSupplyTruckRetreat = function(trucks)
+	local path = { SupplyTruckWaypoint1.Location, SupplyTruckWaypoint2.Location, SupplyTruckWaypoint3.Location }
+
+	Utils.Do(trucks, function(truck)
+		if truck.IsDead then
+			return
+		end
+
+		truck.Move(path[1], 2)
+		truck.Move(path[2], 2)
+
+		Trigger.OnIdle(truck, function()
+			if truck.Location == path[3] then
+				Trigger.Clear(truck, "OnIdle")
+				return
+			end
+
+			-- Include this truck in the later Super Tank explosion.
+			truck.Owner = USSR
+			truck.Move(path[3])
 		end)
 	end)
 end
@@ -114,7 +172,8 @@ SendAlliedUnits = function()
 	Media.PlaySpeechNotification(Greece, "ReinforcementsArrived")
 	Utils.Do(AlliedUnits, function(table)
 		Trigger.AfterDelay(table.delay, function()
-			local units = Reinforcements.Reinforce(Greece, table.types, { StartEntryPoint.Location, StartMovePoint.Location }, 18)
+			local rallyCell = table.point.Location
+			local units = Reinforcements.Reinforce(Greece, table.types, { StartEntryPoint.Location, StartRally3.Location, rallyCell }, 18)
 
 			Utils.Do(units, function(unit)
 				if unit.Type == "e6" then
@@ -184,9 +243,14 @@ SuperTankDomeInfiltrated = function()
 end
 
 SuperTanksDestruction = function()
-	local badGuys = Utils.Where(Map.ActorsInWorld, function(self) return self.Owner == BadGuy and self.HasProperty("Health") end)
-	Utils.Do(badGuys, function(unit)
-		unit.Kill()
+	local southBaseSoviets = Utils.Where(USSR.GetActors(), function(self)
+		return self.HasProperty("Health") and
+		self.Location.Y > SupplyTruckWaypoint2.Location.Y and
+		self.Location.X > SovietOrePoint.Location.X
+	end)
+
+	Utils.Do(southBaseSoviets, function(unit)
+		unit.Kill("ExplosionDeath")
 	end)
 
 	Utils.Do(SuperTanks, function(tnk)
@@ -195,11 +259,20 @@ SuperTanksDestruction = function()
 			Trigger.AfterDelay(DateTime.Seconds(3), camera.Destroy)
 
 			Trigger.ClearAll(tnk)
-			tnk.Kill()
+			tnk.Kill("ExplosionDeath")
 		end
 	end)
 
 	Greece.MarkCompletedObjective(DefendOutpost)
+end
+
+RevealSuperTankDome = function()
+	if SuperTankDomeIsInfiltrated or SuperTankDomeDiscovered or SuperTankDome.IsDead then
+		return
+	end
+
+	Media.PlaySpeechNotification(Greece, "SignalFlareEast")
+	Actor.Create("flare", true, { Owner = England, Location = SuperTankDomeFlarePoint.Location })
 end
 
 CreateDemitri = function()
@@ -223,8 +296,10 @@ CreateDemitri = function()
 	Trigger.OnRemovedFromWorld(demitriChinook, function()
 		if not demitriChinook.IsDead then
 			Media.PlaySpeechNotification(Greece, "TargetRescued")
+			SendSovietParadrop()
 			Trigger.AfterDelay(DateTime.Seconds(1), function() Greece.MarkCompletedObjective(EvacuateDemitri) end)
 			Trigger.AfterDelay(DateTime.Seconds(3), SpawnAndMoveAlliedBaseUnits)
+			Trigger.AfterDelay(DateTime.Seconds(7), RevealSuperTankDome)
 		end
 	end)
 	Trigger.OnRemovedFromWorld(demitri, function()
@@ -286,11 +361,10 @@ end
 InitPlayers = function()
 	Greece = Player.GetPlayer("Greece")
 	Neutral = Player.GetPlayer("Neutral")
+	England = Player.GetPlayer("England")
 	Outpost = Player.GetPlayer("Outpost")
 	BadGuy = Player.GetPlayer("BadGuy")
 	USSR = Player.GetPlayer("USSR")
-	Ukraine = Player.GetPlayer("Ukraine")
-	Turkey = Player.GetPlayer("Turkey")
 	FriendlyMadTanks = Player.GetPlayer("FriendlyMadTanks")
 
 	USSR.Cash = 2000
@@ -305,28 +379,18 @@ AddObjectives = function()
 	CrossRiver = AddPrimaryObjective(Greece, "cross-river")
 	FindOutpost = AddPrimaryObjective(Greece, "find-outpost-and-repair")
 	RescueCivilians = AddSecondaryObjective(Greece, "evacuate-civilian-hospital")
-	BadGuyObj = AddPrimaryObjective(BadGuy, "")
-	USSRObj = AddPrimaryObjective(USSR, "")
-	UkraineObj = AddPrimaryObjective(Ukraine, "")
-	TurkeyObj = AddPrimaryObjective(Turkey, "")
-
-	Trigger.OnPlayerLost(Greece, function()
-		USSR.MarkCompletedObjective(USSRObj)
-		BadGuy.MarkCompletedObjective(BadGuyObj)
-		Ukraine.MarkCompletedObjective(UkraineObj)
-		Turkey.MarkCompletedObjective(TurkeyObj)
-	end)
 
 	Trigger.OnPlayerWon(Greece, function()
 		Media.DisplayMessage(UserInterface.GetFluentMessage("demitri-extracted-super-tanks-destroyed"))
-		USSR.MarkFailedObjective(USSRObj)
-		BadGuy.MarkFailedObjective(BadGuyObj)
-		Ukraine.MarkFailedObjective(UkraineObj)
-		Turkey.MarkFailedObjective(TurkeyObj)
 	end)
 end
 
 InitTriggers = function()
+	local badTrucks = BadGuy.GetActorsByType("badtruk")
+	Trigger.OnAnyKilled(badTrucks, function()
+		OrderSupplyTruckRetreat(badTrucks)
+	end)
+
 	Trigger.OnAllKilled(SuperTanks, function()
 		Trigger.AfterDelay(DateTime.Seconds(3), function() Greece.MarkCompletedObjective(EliminateSuperTanks) end)
 	end)
@@ -348,20 +412,32 @@ InitTriggers = function()
 			SuperTankDomeInfiltrated()
 		end
 	end)
+	Trigger.OnDiscovered(SuperTankDome, function(_, discoverer)
+		SuperTankDomeDiscovered = SuperTankDomeDiscovered or discoverer == Greece
+	end)
 
 	Trigger.OnKilled(UkraineBarrel, function()
 		if not UkraineBuilding.IsDead then UkraineBuilding.Kill() end
 	end)
 
-	Trigger.OnAnyKilled(USSROutpostFlameTurrets, function()
-		Utils.Do(ExplosiveBarrels, function(barrel)
-			if not barrel.IsDead then barrel.Kill() end
+	for i = 1, 2 do
+		Trigger.OnKilled(USSROutpostFlameTurrets[i], function()
+			if not ExplosiveBarrels[i].IsDead then
+				ExplosiveBarrels[i].Kill()
+			end
 		end)
-	end)
+	end
 
-	Trigger.OnKilled(DemitriChurch, function()
-		if not DemitriFound then
+	Trigger.OnKilled(DemitriChurch, function(_, killer)
+		if DemitriFound then
+			return
+		else
 			Greece.MarkFailedObjective(FindDemitri)
+		end
+
+		if killer.Owner ~= Greece then
+			Actor.Create("camera", true, { Owner = Greece, Location = DemitriChurchSpawnPoint.Location })
+			Camera.Position = DemitriChurchSpawnPoint.CenterPosition
 		end
 	end)
 
@@ -375,6 +451,9 @@ InitTriggers = function()
 	Trigger.OnInfiltrated(USSROutpostSilo, function()
 		MoneyStolen = true
 		Greece.MarkCompletedObjective(StealMoney)
+		Trigger.AfterDelay(1, function()
+			Greece.Cash = math.max(Greece.Cash, Actor.Cost("lst"))
+		end)
 	end)
 
 	Trigger.OnKilledOrCaptured(USSROutpostSilo, function()
@@ -383,9 +462,8 @@ InitTriggers = function()
 		end
 	end)
 
-	BeachReached = false
 	Trigger.OnEnteredFootprint(BeachTrigger, function(a, id)
-		if not BeachReached and a.Owner == Greece then
+		if not BeachReached and a.Owner == Greece and a.Type ~= "lst" then
 			BeachReached = true
 			Trigger.RemoveFootprintTrigger(id)
 			Greece.MarkCompletedObjective(CrossRiver)
@@ -429,6 +507,7 @@ InitTriggers = function()
 	LstProduced = 0
 	Trigger.OnKilled(USSRSpen, LandingPossible)
 	Trigger.OnSold(USSRSpen, LandingPossible)
+	Trigger.OnCapture(USSRSpen, OrderPenAttack)
 	Trigger.OnProduction(USSRSpen, function(self, produced)
 		if produced.Type == "lst" then
 			LstProduced = LstProduced + 1

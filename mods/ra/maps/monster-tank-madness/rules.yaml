@@ -28,6 +28,10 @@ World:
 		Weapon: BarrelExplode
 		EmptyWeapon: BarrelExplode
 
+powerproxy.paratroopers:
+	ParatroopersPower:
+		DropItems: E1,E1,E1,E2,E2
+
 V01.exploding:
 	Inherits: ^ExplodingCivBuilding
 	RenderSprites:
@@ -106,6 +110,9 @@ TRAN:
 LST:
 	Cargo:
 		Types: Infantry, Vehicle, Demitri
+	Buildable:
+		BuildDuration: 300
+		BuildDurationModifier: 100
 
 JEEP:
 	Cargo:
@@ -185,6 +192,40 @@ PBOX:
 	-TransformOnCapture:
 	-InfiltrateForTransform:
 
+HARV:
+	GrantConditionOnCombatantOwner@UNPARKED:
+		Condition: claimed
+	Harvester:
+		RequiresCondition: claimed
+
+V2RL.Percentage:
+	Inherits: V2RL
+	RenderSprites:
+		Image: V2RL
+	ExternalCondition@SUBPENATTACK:
+		Condition: using-percentage-warhead
+	Armament:
+		Weapon: SCUD
+		RequiresCondition: !using-percentage-warhead
+		ReloadingCondition: reloading
+		PauseOnCondition: attacking-pen
+	Armament@SUBPENATTACK:
+		Weapon: SCUD.percentage
+		Name: secondary
+		RequiresCondition: using-percentage-warhead
+		ReloadingCondition: reloading
+	GrantConditionOnAttack@SUBPENATTACK:
+		Condition: attacking-pen
+		ArmamentNames: secondary
+		RevokeDelay: 215
+	WithFacingSpriteBody:
+		RequiresCondition: !reloading && !attacking-pen
+		Name: loaded
+	WithFacingSpriteBody@EMPTY:
+		RequiresCondition: reloading || attacking-pen
+		Sequence: empty-idle
+		Name: reloading
+
 DOME.NoInfiltrate:
 	Inherits: DOME
 	Buildable:
@@ -196,6 +237,21 @@ DOME.NoInfiltrate:
 		TargetTypes: GroundActor, Structure, C4, DetonateAttack, MissionObjective
 	ProvidesPrerequisite:
 		Prerequisite: dome
+
+MISS:
+	SpawnActorOnDeath@CRATE:
+		Actor: HealCrate
+		Offset: 1,1
+
+SILO:
+	InfiltrateForCash:
+		Maximum: 1500
+
+SPEN:
+	Armor:
+		Type: Wood
+	Buildable:
+		Prerequisites: ~disabled
 
 SPY:
 	Infiltrates:
@@ -244,10 +300,6 @@ MSLO:
 		Prerequisites: ~disabled
 
 SYRD:
-	Buildable:
-		Prerequisites: ~disabled
-
-SPEN:
 	Buildable:
 		Prerequisites: ~disabled
 

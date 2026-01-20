@@ -13,3 +13,16 @@ SuperTankPrimary:
 	Warhead@1Dam: SpreadDamage
 		Damage: 50000
 		InvalidTargets: Air, Infantry
+
+SCUD:
+	Range: 10c0
+	ReloadDelay: 215
+
+SCUD.percentage:
+	Inherits: SCUD
+	Projectile: Bullet
+		Inaccuracy: 0c0
+	Warhead@1Dam: HealthPercentageDamage
+		Damage: 33
+		Versus:
+			Wood: 100
