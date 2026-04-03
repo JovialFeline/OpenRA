@@ -33,6 +33,10 @@ namespace OpenRA.Mods.D2k.Traits
 		[Desc("The condition to grant to self while attacking.")]
 		public readonly string AttackingCondition = null;
 
+		[GrantedConditionReference]
+		[Desc("The condition to grant to self while above ground.")]
+		public readonly string SwallowingCondition = null;
+
 		public readonly string WormAttackSound = "WORM.WAV";
 
 		[NotificationReference("Speech")]

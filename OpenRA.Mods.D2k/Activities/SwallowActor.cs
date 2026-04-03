@@ -39,6 +39,7 @@ namespace OpenRA.Mods.D2k.Activities
 		CPos burrowLocation;
 		AttackState stance;
 		int attackingToken = Actor.InvalidConditionToken;
+		int swallowingToken = Actor.InvalidConditionToken;
 
 		public SwallowActor(Actor self, in Target target, Armament a, IFacing facing)
 		{
@@ -110,14 +111,14 @@ namespace OpenRA.Mods.D2k.Activities
 					// The target has moved too far away
 					if ((burrowLocation - targetLocation).Length > NearEnough)
 					{
-						RevokeCondition(self);
+						RevokeConditions(self);
 						return true;
 					}
 
 					// The target reached solid ground
 					if (!positionable.CanEnterCell(targetLocation, null, BlockedByActor.None))
 					{
-						RevokeCondition(self);
+						RevokeConditions(self);
 						return true;
 					}
 
@@ -127,13 +128,16 @@ namespace OpenRA.Mods.D2k.Activities
 
 					if (targets.Count == 0)
 					{
-						RevokeCondition(self);
+						RevokeConditions(self);
 						return true;
 					}
 
 					stance = AttackState.Attacking;
 					countdown = swallow.Info.ReturnDelay;
 					sandworm.IsAttacking = true;
+					if (swallowingToken == Actor.InvalidConditionToken)
+						swallowingToken = self.GrantCondition(swallow.Info.SwallowingCondition);
+
 					AttackTargets(self, targets);
 
 					break;
@@ -150,17 +154,20 @@ namespace OpenRA.Mods.D2k.Activities
 						self.World.AddFrameEndTask(w => self.Dispose());
 					}
 
-					RevokeCondition(self);
+					RevokeConditions(self);
 					return true;
 			}
 
 			return false;
 		}
 
-		void RevokeCondition(Actor self)
+		void RevokeConditions(Actor self)
 		{
 			if (attackingToken != Actor.InvalidConditionToken)
 				attackingToken = self.RevokeCondition(attackingToken);
+
+			if (swallowingToken != Actor.InvalidConditionToken)
+				swallowingToken = self.RevokeCondition(swallowingToken);
 		}
 	}
 }

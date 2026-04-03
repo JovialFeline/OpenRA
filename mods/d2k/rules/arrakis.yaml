@@ -105,10 +105,14 @@ sandworm:
 	AttackSwallow:
 		AttackRequiresEnteringCell: true
 		AttackingCondition: attacking
+		SwallowingCondition: swallowing
 	Armament:
 		Weapon: WormJaw
 	Sandworm:
 		WanderMoveRadius: 5
+	DamageMultiplier:
+		Modifier: 0
+		RequiresCondition: swallowing
 	IgnoresCloak:
 	AnnounceOnSeen:
 		Notification: WormSign
