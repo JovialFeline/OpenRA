@@ -1,0 +1,161 @@
+World:
+	LuaScript:
+		Scripts: campaign.lua, utils.lua, psx-gdi01.lua
+	MissionData:
+		Briefing: briefing
+		StartVideo: psx_mission_intro_01.vqa
+		WinVideo: trtkil_d.vqa
+		LossVideo: gameover.vqa
+	ScriptLobbyDropdown@difficulty:
+		ID: difficulty
+		Label: dropdown-difficulty.label
+		Description: dropdown-difficulty.description
+		Values:
+			easy: options-difficulty.easy
+			normal: options-difficulty.normal
+			hard: options-difficulty.hard
+		Default: normal
+		Locked: false
+
+Player:
+	EnemyWatcher:
+	PlayerResources:
+		DefaultCash: 0
+	ExternalCondition@rebuild:
+		Condition: rebuild-enabled
+	BaseBuilderBotModule@campaign:
+		RequiresCondition: rebuild-enabled
+		BuildingQueues: Building.Nod
+		DefenseQueues: Support.Nod
+		MinimumExcessPower: 0
+		MaximumExcessPower: 270
+		ExcessPowerIncrement: 40
+		ExcessPowerIncreaseThreshold: 3
+		MaxBaseRadius: 7
+		RallyPointScanRadius: 5
+		ConstructionYardTypes: fact
+		PowerTypes: nuke
+		ProductionTypes: afld, hand
+		DefenseTypes: gun
+		BuildingLimits:
+			afld: 1
+			hand: 1
+			nuke: 2
+			gun: 2
+		BuildingFractions:
+			afld: 9
+			hand: 5
+			nuke: 1
+			gun: 12
+
+# Placed near some cliffs to prevent the bot module building there.
+buildblocker:
+	Immobile:
+		OccupiesSpace: true
+
+FLARE:
+	RevealsShroud:
+		Range: 5c0
+		Type: CenterPosition
+	KillsSelf:
+		RemoveInstead: true
+		Delay: 7500
+
+V25:
+	AnnounceOnSeen:
+
+GUN:
+	Power:
+		Amount: 0
+	ScriptTags:
+
+E1:
+	ScriptTags:
+
+E3:
+	ScriptTags:
+
+E4:
+	Buildable:
+		Prerequisites: barracks
+	ScriptTags:
+
+RMBO.Easy:
+	Inherits: RMBO
+	Health:
+		HP: 30000
+	ChangesHealth:
+		Step: 500
+		Delay: 10
+		StartIfBelow: 50
+		DamageCooldown: 200
+	RenderSprites:
+		Image: RMBO
+
+RMBO.Hard:
+	Inherits: RMBO
+	-AutoTarget:
+	-AutoTargetPriority@DEFAULT:
+	-AutoTargetPriority@ATTACKANYTHING:
+	-AttackMove:
+	RenderSprites:
+		Image: RMBO
+
+BGGY:
+	ScriptTags:
+
+FTNK:
+	ScriptTags:
+
+FTNK.Insertion:
+	Inherits: FTNK
+	Buildable:
+		Prerequisites: ~disabled
+	Mobile:
+		Speed: 46
+	FireWarheadsOnDeath:
+		DamageThreshold: 99
+	RenderSprites:
+		Image: FTNK
+
+LTNK:
+	ScriptTags:
+
+TRAN.Insertion:
+	Inherits: TRAN
+	Cargo:
+		MaxWeight: 0
+	RejectsOrders:
+	-Selectable:
+	RenderSprites:
+		Image: TRAN
+	Interactable:
+	# Ensure GDI helicopters at the beach finish unloading.
+	GrantConditionOnFaction@invulnerable:
+		Condition: invulnerable
+		Factions: gdi
+	DamageMultiplier:
+		RequiresCondition: invulnerable
+		Modifier: 0
+
+# The Flamethrowers airlifted by Nod will often unload close to the Commando
+# or Grenadiers. That can be extra rough because of the helicopter's faster
+# unload time in ORA. This variant compensates a little.
+TRAN.SlowUnload:
+	Inherits: TRAN.Insertion
+	Cargo:
+		BeforeUnloadDelay: 20
+		BetweenUnloadDelay: 15
+	RenderSprites:
+		Image: TRAN
+
+BOAT:
+	Health:
+		HP: 150000
+	AutoTarget:
+		InitialStance: AttackAnything
+	RejectsOrders:
+		Except: Attack
+
+LST:
+	MustBeDestroyed:
