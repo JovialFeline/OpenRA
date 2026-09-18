@@ -123,7 +123,7 @@ SpawnAlliedUnit = function(units)
 	if CurrentReinforcement1 < #Reinforcements1 then
 		CurrentReinforcement1 = CurrentReinforcement1 + 1
 		Trigger.AfterDelay(ReinforcementsTicks1, function()
-			reinforcements1 = { Reinforcements1[CurrentReinforcement1] }
+			local reinforcements1 = { Reinforcements1[CurrentReinforcement1] }
 			SpawnAlliedUnit(reinforcements1)
 		end)
 	end
@@ -131,7 +131,7 @@ SpawnAlliedUnit = function(units)
 	if CurrentReinforcement2 < #Reinforcements2 then
 		CurrentReinforcement2 = CurrentReinforcement2 + 1
 		Trigger.AfterDelay(ReinforcementsTicks2, function()
-			reinforcements2 = { Reinforcements2[CurrentReinforcement2] }
+			local reinforcements2 = { Reinforcements2[CurrentReinforcement2] }
 			SpawnAlliedUnit(reinforcements2)
 		end)
 	end
@@ -184,33 +184,32 @@ SendSovietParadrop = function()
 end
 
 AircraftTargets = function(yak)
-	local targets = Utils.Where(Map.ActorsInWorld, function(a)
-		return (a.Owner == Allies1 or a.Owner == Allies2) and a.HasProperty("Health") and yak.CanTarget(a)
-	end)
+	local targets = { }
 
-	-- Prefer mobile units
-	table.sort(targets, function(a, b) return a.HasProperty("Move") and not b.HasProperty("Move") end)
+	Utils.Do(Humans, function(player)
+		targets = Utils.Concat(targets, Utils.Where(player.GetActors(), function(a)
+			return a.HasProperty("Health") and yak.CanTarget(a)
+		end))
+	end)
 
 	return targets
 end
 
 YakAttack = function(yak, target)
-	if not target or target.IsDead or (not target.IsInWorld) or (not yak.CanTarget(target)) then
-		local targets = AircraftTargets(yak)
-		if #targets > 0 then
-			target = Utils.Random(targets)
+	Trigger.OnIdle(yak, function()
+		if not target or target.IsDead or (not target.IsInWorld) or (not yak.CanTarget(target)) then
+			local targets = AircraftTargets(yak)
+			if #targets > 0 then
+				target = Utils.Random(targets)
+			end
 		end
-	end
 
-	if target and yak.AmmoCount() > 0 and yak.CanTarget(target) then
-		yak.Attack(target)
-	else
-		-- Includes yak.Resupply()
-		yak.ReturnToBase()
-	end
-
-	yak.CallFunc(function()
-		YakAttack(yak, target)
+		if target and yak.AmmoCount() > 0 and yak.CanTarget(target) then
+			yak.Attack(target)
+		else
+			-- Includes yak.Resupply()
+			yak.ReturnToBase()
+		end
 	end)
 end
 
