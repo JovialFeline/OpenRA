@@ -1,0 +1,148 @@
+World:
+	MissionData:
+		Briefing: briefing
+		StartVideo: psx_mission_intro_01.vqa
+		WinVideo: nodlose.vqa
+		LossVideo: gameover.vqa
+	LuaScript:
+		Scripts: campaign.lua, utils.lua, psx-gdi02.lua
+	ScriptLobbyDropdown@difficulty:
+		ID: difficulty
+		Label: dropdown-difficulty.label
+		Description: dropdown-difficulty.description
+		Values:
+			easy: options-difficulty.easy
+			normal: options-difficulty.normal
+			hard: options-difficulty.hard
+		Default: normal
+	TimeLimitManager:
+		SkipTimerExpiredNotification: true
+
+Player:
+	PlayerResources:
+		DefaultCash: 0
+	ExternalCondition@campaignbuilder:
+		Condition: nod-builder-enabled
+	BaseBuilderBotModule@campaign:
+		RequiresCondition: nod-builder-enabled
+		BuildingQueues: Building.Nod
+		MinBaseRadius: 0
+		MaxBaseRadius: 4
+		MinimumExcessPower: 40
+		RallyPointScanRadius: 5
+		ConstructionYardTypes: fact, hand
+		PowerTypes: nuk2
+		BuildingLimits:
+			nuk2: 4
+		BuildingFractions:
+			nuk2: 1
+
+^CivInfantry:
+	GrantConditionOnTerrain@AVOIDCRUSH:
+		Condition: on-bridge
+		TerrainTypes: Bridge
+	Crushable:
+		RequiresCondition: on-bridge
+	Wanders:
+		AvoidTerrainTypes: Tiberium, BlueTiberium, Bridge
+
+CAMERA.Obelisk:
+	Inherits: CAMERA
+	RevealsShroud:
+		Range: 1c512
+		Type: CenterPosition
+	RenderSpritesEditorOnly:
+		Image: CAMERA
+	KillsSelf:
+		RemoveInstead: true
+		Delay: 1
+
+FLARE:
+	RevealsShroud:
+		Range: 5c0
+
+E1:
+	ScriptTags:
+
+E3:
+	ScriptTags:
+
+E4:
+	ScriptTags:
+
+MOEBIUS:
+	RevealOnDeath@ALLY:
+		RevealForRelationships: Ally
+		Duration: 1500
+		Radius: 4c0
+	RevealOnDeath@NEUTRAL:
+		RevealForRelationships: Neutral
+		Duration: 1500
+		Radius: 12c0
+	ActorLostNotification:
+		Notification: CivilianKilled
+		TextNotification: civilian-killed
+		NotifyAll: true
+
+APC:
+	Cargo:
+		PassengerConditions:
+			moebius: carrying-doctor
+	RevealOnDeath:
+		RequiresCondition: carrying-doctor
+		Duration: 1500
+		Radius: 4c0
+	ActorLostNotification:
+		RequiresCondition: !carrying-doctor
+
+ARTY:
+	Buildable:
+		Prerequisites: afld
+	ScriptTags:
+
+BGGY:
+	ScriptTags:
+
+FTNK:
+	Buildable:
+		Prerequisites: afld
+	ScriptTags:
+
+TRAN.Extraction:
+	Inherits: TRAN
+	Cargo:
+		PassengerConditions:
+			moebius: carrying-doctor
+	RejectsOrders:
+		RequiresCondition: carrying-doctor
+	RevealOnDeath:
+		RequiresCondition: carrying-doctor
+		Duration: 1500
+		Radius: 4c0
+	Voiced:
+		RequiresCondition: !carrying-doctor
+	ActorLostNotification:
+		RequiresCondition: !carrying-doctor
+	# Insurance v. a hypothetical last second death to missiles while extracting.
+	DamageMultiplier:
+		RequiresCondition: carrying-doctor && airborne
+		Modifier: 0
+	RenderSprites:
+		Image: tran
+
+OBLI:
+	ExternalCondition@EASY:
+		Condition: self-revealing
+	RevealsShroud@EASY:
+		RequiresCondition: self-revealing
+		ValidRelationships: Enemy
+		Range: 1c512
+
+TMPL:
+	-WithColoredOverlay@IDISABLE:
+	NukePower:
+		CameraRelationships: Enemy
+		CameraRemoveDelay: 150
+
+T18:
+	ScriptTriggers:

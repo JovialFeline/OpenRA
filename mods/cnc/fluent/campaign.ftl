@@ -22,7 +22,7 @@ actor-hq-description = Provides an overview of the battlefield.
 ## gdi08a
 actor-c3-name = Farmer Mike
 
-## gdi08b
+## gdi08b, psx-gdi02
 civilian-killed = Civilian killed.
 
 ## nod01

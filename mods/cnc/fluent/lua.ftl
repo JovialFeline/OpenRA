@@ -158,6 +158,10 @@ kill-every-villager-in-area = Kill every villager in the area.
 careless-gdi-experiments-killed = Careless GDI experiments killed these villagers.
 villagers-must-not-live = They must not live to dispute that story.
 
+## psx-gdi02
+clear-sams-evacuate-mobius = Destroy all SAM Sites and evacuate Dr. Mobius.
+nod-missile-attack-in = Nod missile attack in { $time }
+
 ## twist-of-fate
 clear-path = Repel the ambush and clear the way for our MCV.
 recover-old-base = Capture the Construction Yard at our recon post to regain control.
