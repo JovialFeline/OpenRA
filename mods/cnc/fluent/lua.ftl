@@ -13,7 +13,7 @@ destroy-obelisk-sams = Destroy the SAM sites protecting the Obelisk.
 destroy-obelisk = Destroy the Obelisk.
 destroy-biotech = Destroy the biotech facility.
 
-## gdi03, gdi05abc, gdi07 gdi08ab, gdi09
+## gdi03, gdi05abc, gdi07 gdi08ab, gdi09, psx-gdi03
 destroy-sams = Destroy the SAM sites to receive air support.
 
 ## funpark01
@@ -25,7 +25,7 @@ kill-creatures = Kill all creatures in the area.
 ## gdi01
 establish-beachhead = Establish a beachhead.
 
-## gdi01, gdi02, gdi03, gdi04c, gdi05abc, twist-of-fate
+## gdi01, gdi02, gdi03, gdi04c, gdi05abc, psx-gdi3, twist-of-fate
 eliminate-nod = Eliminate all Nod forces in the area.
 
 ## gdi02, nod09

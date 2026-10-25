@@ -1,0 +1,234 @@
+World:
+	LuaScript:
+		Scripts: campaign.lua, utils.lua, psx-gdi03.lua, psx-gdi03-ai.lua
+	MissionData:
+		Briefing: briefing
+		#StartVideo: psx_mission_intro_02.vqa
+		#StartVideo: tankgo.vqa
+		LossVideo: gameover.vqa
+	ScriptLobbyDropdown@difficulty:
+		ID: difficulty
+		Label: dropdown-difficulty.label
+		Description: dropdown-difficulty.description
+		Values:
+			easy: options-difficulty.easy
+			normal: options-difficulty.normal
+			hard: options-difficulty.hard
+		Default: normal
+		Locked: false
+
+Player:
+	PlayerResources:
+		DefaultCash: 0
+	ExternalCondition@nodconstruction:
+		Condition: nod-builder-enabled
+	BaseBuilderBotModule@campaign:
+		RequiresCondition: nod-builder-enabled
+		BuildingQueues: Building.Nod, Building.GDI
+		DefenseQueues: Support.Nod, Support.GDI
+		MinimumExcessPower: 0
+		MaximumExcessPower: 240
+		ExcessPowerIncrement: 40
+		ExcessPowerIncreaseThreshold: 3
+		MaxBaseRadius: 10
+		RallyPointScanRadius: 5
+		ConstructionYardTypes: fact
+		ExpansionTolerate: 0
+		RefineryTypes: proc
+		PowerTypes: nuk2
+		ProductionTypes: pyle, hand, weap, afld
+		NewProductionCashThreshold: 8000
+		SiloTypes: silo
+		DefenseTypes: gun,obli
+		BuildingLimits:
+			pyle: 1
+			hand: 1
+			weap: 1
+			afld: 1
+			silo: 4
+			gun: 4
+			obli: 1
+			proc: 2
+		BuildingFractions:
+			nuk2: 1
+			proc: 100
+			pyle: 5
+			hand: 5
+			weap: 9
+			afld: 9
+			gun: 6
+			obli: 20
+
+CRATE.plain:
+	RenderSprites:
+		Image: WCRATE
+
+# Prevents accidental crate collection by Nod soldiers.
+crateblocker:
+	Immobile:
+		OccupiesSpace: true
+	Crushable:
+		WarnProbability: 0
+		CrushClasses: crate
+		CrushedByFriendlies: false
+
+FACT:
+	ProvidesPrerequisite@BOTFACT:
+		Prerequisite: bot-fact
+		Factions: nod
+		ResetOnOwnerChange: True
+
+FLARE:
+	RevealsShroud:
+		Range: 5c0
+
+HQ:
+	-AirstrikePower:
+
+HPAD:
+	Buildable:
+		# Changed so ORCA prerequisites must also be met.
+		Prerequisites: anyhq
+
+OBLI:
+	Buildable:
+		Prerequisites: bot-fact, anypower, hand
+
+# Even with a refinery moved toward their enclosed ore
+# field, the bot seems to need help maintaining costs.
+PROC:
+	GrantConditionOnBotOwner@BOTPROC:
+		Condition: nod-owned
+		Bots: campaign
+	ResourceValueMultiplier@BOTPROC:
+		RequiresCondition: nod-owned
+		Modifier: 110
+
+PROC.Outpost:
+	Inherits: PROC
+	Buildable:
+		Prerequisites: ~disabled
+	ProvidesPrerequisite:
+		Prerequisite: proc
+	Capturable:
+		Types: building
+	RenderSprites:
+		Image: PROC
+
+V20:
+	# Scattered civilians may otherwise get stuck behind the husk.
+	-SpawnActorOnDeath:
+
+V25:
+	SpawnActorOnDeath:
+		Actor: moneycrate
+		Offset: 0,1
+
+E1:
+	ScriptTags:
+
+E3:
+	ScriptTags:
+
+E3.WideScan:
+	Inherits: E3
+	Buildable:
+		Prerequisites: ~disabled
+	RevealsShroud:
+		Range: 8c0
+	AutoTarget:
+		ScanRadius: 7
+	AutoTarget:
+	RenderSprites:
+		Image: E3
+
+E4:
+	Buildable:
+		Prerequisites: ~hand
+	ScriptTags:
+
+RMBO.easy:
+	Inherits: RMBO
+	Health:
+		HP: 30000
+	ChangesHealth:
+		Step: 500
+		Delay: 10
+		StartIfBelow: 50
+		DamageCooldown: 200
+	RenderSprites:
+		Image: RMBO
+
+ARTY:
+	Buildable:
+		Prerequisites: ~afld
+
+FTNK:
+	Buildable:
+		Prerequisites: ~afld
+
+HARV:
+	Harvester:
+		SearchFromProcRadius: 45
+
+LTNK:
+	Buildable:
+		Prerequisites: ~afld
+
+LTNK.WideScan:
+	Inherits: LTNK
+	Buildable:
+		Prerequisites: ~disabled
+	RevealsShroud:
+		Range: 8c0
+	AutoTarget:
+		ScanRadius: 7
+	RenderSprites:
+		Image: LTNK
+
+STNK:
+	Buildable:
+		Prerequisites: ~afld
+
+TRAN.Capturable:
+	Inherits: TRAN
+	Buildable:
+		Prerequisites: ~disabled
+	Tooltip:
+		GenericVisibility: None
+	Aircraft:
+		IdleBehavior: Land
+	Targetable@GROUND:
+		TargetTypes: Ground, Vehicle, NoAutoTarget
+	CaptureManager:
+	Capturable:
+		Types: husk
+	TransformOnCapture:
+		IntoActor: TRAN
+	WithIdleOverlay@ROTOR1GROUND:
+		PauseOnCondition: !airborne
+	WithIdleOverlay@ROTOR2GROUND:
+		PauseOnCondition: !airborne
+	RenderSprites:
+		Image: TRAN
+	-MustBeDestroyed:
+
+E5:
+	Buildable:
+		Prerequisites: ~disabled
+
+RMBO:
+	Buildable:
+		Prerequisites: ~disabled
+
+MLRS:
+	Buildable:
+		Prerequisites: ~disabled
+
+TRAN:
+	Buildable:
+		Prerequisites: ~disabled
+
+TMPL:
+	Buildable:
+		Prerequisites: ~disabled
