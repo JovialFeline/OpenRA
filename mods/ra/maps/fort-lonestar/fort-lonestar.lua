@@ -91,14 +91,6 @@ if Difficulty == "tough" or Difficulty == "endless" then
 	Waves[11] = { delay = 1500, units = { Vehicles, Infantry, Patrol, Patrol, Patrol, Infantry, LongRange, Tank, Boss, Infantry, Infantry, Patrol } }
 end
 
-IdleHunt = function(actor)
-	Trigger.OnIdle(actor, function(a)
-		if a.IsInWorld then
-			a.Hunt()
-		end
-	end)
-end
-
 SendUnits = function(entryCell, unitTypes, targetCell, extraData)
 	Reinforcements.Reinforce(Soviets, unitTypes, { entryCell }, 40, function(a)
 		if not a.HasProperty("AttackMove") then
