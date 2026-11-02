@@ -1,0 +1,197 @@
+World:
+	LuaScript:
+		Scripts: campaign.lua, utils.lua, nod11a.lua
+	MissionData:
+		Briefing: briefing
+		StartVideo: stealth.vqa
+		LossVideo: deskill.vqa
+		WinVideo: obel.vqa
+		BriefingVideo: nod11.vqa
+	MusicPlaylist:
+		VictoryMusic: nod_win1
+	ScriptLobbyDropdown@difficulty:
+		ID: difficulty
+		Label: dropdown-difficulty.label
+		Description: dropdown-difficulty.description
+		Values:
+			easy: options-difficulty.easy
+			normal: options-difficulty.normal
+			hard: options-difficulty.hard
+		Default: normal
+
+Player:
+	EnemyWatcher:
+	PlayerResources:
+		DefaultCash: 2000
+
+# TODO remove range tester.
+^GainsExperience:
+	ExternalCondition@RANGE5:
+		Condition: range-5
+	ExternalCondition@RANGE6:
+		Condition: range-6
+	ExternalCondition@RANGE7:
+		Condition: range-7
+	ExternalCondition@RANGE8:
+		Condition: range-8
+	ExternalCondition@RANGE9:
+		Condition: range-9
+	ExternalCondition@RANGE10:
+		Condition: range-10
+	ExternalCondition@RANGE11:
+		Condition: range-11
+	ExternalCondition@RANGE12:
+		Condition: range-12
+	WithRangeCircle@RANGE5:
+		RequiresCondition: range-5
+		Range: 5c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+	WithRangeCircle@RANGE6:
+		RequiresCondition: range-6
+		Range: 6c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+	WithRangeCircle@RANGE7:
+		RequiresCondition: range-7
+		Range: 7c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+	WithRangeCircle@RANGE8:
+		RequiresCondition: range-8
+		Range: 8c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+	WithRangeCircle@RANGE9:
+		RequiresCondition: range-9
+		Range: 9c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+	WithRangeCircle@RANGE10:
+		RequiresCondition: range-10
+		Range: 10c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+	WithRangeCircle@RANGE11:
+		RequiresCondition: range-11
+		Range: 11c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+	WithRangeCircle@RANGE12:
+		RequiresCondition: range-12
+		Range: 12c0
+		Visible: Always
+		ValidRelationships: Ally, Enemy, Neutral
+
+^Bridge:
+	DamageMultiplier@INVULNERABLE:
+		Modifier: 0
+
+BRIDGEHUT:
+	-Targetable:
+
+^OutpostBuilding:
+	Buildable:
+		Prerequisites: ~disabled
+	Capturable:
+		Types: building
+
+FACT:
+	AnnounceOnSeen:
+		Notification: NewOptions
+		TextNotification: notification-new-construction-options
+
+GTWR:
+	ExternalCondition@REVEALED:
+		Condition: revealed
+	RevealsShroud@REVEALED:
+		RequiresCondition: revealed
+		ValidRelationships: Enemy
+		Range: 2c512
+	# This is pure convenience so the frozen actor doesn't remain.
+	RevealOnDeath:
+		RequiresCondition: revealed
+		Duration: 1
+		RevealForRelationships: Enemy
+
+HQ.OUTPOST:
+	Inherits: HQ
+	Inherits@OUTPOST: ^OutpostBuilding
+	RenderSprites:
+		Image: HQ
+
+MISS:
+	Inherits@OUTPOST: ^OutpostBuilding
+	CaptureManager:
+	Capturable:
+		Types: building
+	GrantConditionOnBotOwner@UNCAPTURED:
+		Condition: uncaptured
+		Bots: campaign
+	RevealsShroud@UNCAPTURED:
+		RequiresCondition: uncaptured
+		ValidRelationships: Enemy
+		Range: 1c0
+
+NUKE.OUTPOST:
+	Inherits: NUKE
+	Inherits@OUTPOST: ^OutpostBuilding
+	RenderSprites:
+		Image: NUKE
+
+PROC.OUTPOST:
+	Inherits: PROC
+	Inherits@OUTPOST: ^OutpostBuilding
+	ProvidesPrerequisite:
+		Prerequisite: proc
+	RenderSprites:
+		Image: proc
+
+V25:
+	SpawnActorOnDeath:
+		Actor: moneycrate
+		Offset: 0,1
+
+RMBO.easy:
+	Inherits: RMBO
+	Health:
+		HP: 30000
+	ChangesHealth:
+		Step: 500
+		Delay: 10
+		StartIfBelow: 50
+		DamageCooldown: 200
+	RenderSprites:
+		Image: RMBO
+
+RMBO.hard:
+	Inherits: RMBO
+	-AutoTarget:
+	-AutoTargetPriority@DEFAULT:
+	-AutoTargetPriority@ATTACKANYTHING:
+	-AttackMove:
+	RenderSprites:
+		Image: RMBO
+
+STNK:
+	Buildable:
+		Prerequisites: ~miss
+	MustBeDestroyed:
+
+BOAT:
+	Health:
+		HP: 150000
+	RevealsShroud:
+		ValidRelationships: Ally, Neutral, Enemy
+		Range: 4c0
+
+TRAN.IN:
+	Inherits: TRAN
+	RejectsOrders:
+	-Selectable:
+	RenderSprites:
+		Image: TRAN
+	Buildable:
+		Prerequisites: ~disabled
+	Interactable:
+	-RevealsShroud:
